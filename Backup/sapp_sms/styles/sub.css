@@ -1,0 +1,175 @@
+﻿/*Style for Sub Page*/
+#content_left
+{
+	width:150px;
+	float:left;clear:left;
+    margin-top:5px;
+}
+#content_middle
+{
+	width:810px;
+	height:500px;
+	float:left;
+	margin-left:5px;
+}
+#content_right
+{
+    width:150px;
+	float:right;clear:right;
+	margin-top:5px;
+}
+#grid_left
+{
+    width:385px;
+    height:500px;
+    float:left;clear:left;
+}
+#grid_middle
+{
+    width:35px;
+    height:500px;
+}
+#grid_right
+{
+    width: 385px;
+    height:500px;
+    float:right; clear:right;
+    margin-top:5px;
+}
+#panel_right
+{
+    width:485px;
+    height:500px;
+    float:right; clear:right;
+    margin-top:5px;
+}
+/*Style for button*/
+.button
+{
+    border: 1px #369 solid;
+}
+.button-title
+{
+    background-color:#369;
+    color:#ffffff;
+    }
+/*Style for detail table*/
+table.details
+{
+    width:750px;
+    border-width: 2px 2px 2px 2px;
+	border-spacing: 1px;
+	border-style: solid solid solid solid;
+	border-color: #a6c9e2 #a6c9e2 #a6c9e2 #a6c9e2;
+	border-collapse: separate;
+	text-align:left;
+	background-color:White;
+}
+table.details td {
+	border: 1px solid #a6c9e2;
+    padding: 1px;
+    -moz-border-radius: 0px 0px 0px 0px;
+	vertical-align:top;
+    margin-left: 40px;
+}
+
+/*Style for detail table*/
+table.panel
+{
+    width:450px;
+    border-width: 2px 2px 2px 2px;
+	border-spacing: 1px;
+	border-style: solid solid solid solid;
+	border-color: #a6c9e2 #a6c9e2 #a6c9e2 #a6c9e2;
+	border-collapse: separate;
+	text-align:left;
+}
+table.panel td {
+	border-width: 1px 1px 1px 1px;
+	padding: 1px 1px 1px 1px;
+	border-style: solid solid solid solid;
+	border-color: #a6c9e2 #a6c9e2 #a6c9e2 #a6c9e2;
+	-moz-border-radius: 0px 0px 0px 0px;
+	vertical-align:top;
+}
+
+/*Style for login table*/
+table.login
+{
+    width:250px;
+    border-width: 2px 2px 2px 2px;
+	border-spacing: 1px;
+	border-style: solid solid solid solid;
+	border-color: #369 #369 #369 #369;
+	border-collapse: separate;
+	text-align:left;
+}
+table.login td {
+	border-width: 1px 1px 1px 1px;
+	padding: 1px 1px 1px 1px;
+	border-style: solid solid solid solid;
+	border-color: #369 #369 #369 #369;
+	-moz-border-radius: 0px 0px 0px 0px;
+	vertical-align:top;
+}
+
+/*Style for iframe*/
+iframe.content 
+{
+    width:993px;
+    height:900px;
+}
+
+.ui-widget-header
+{
+    font-family:"Tahoma"; 
+    font-size:12px;
+     font-weight:bold;    
+}
+
+.ui-widget-content
+{
+    font-family:"Tahoma"; 
+    font-size:12px;
+}
+
+table.modaltable
+{
+    border-width: 2px 2px 2px 2px;
+	border-spacing: 1px;
+	border-style: solid solid solid solid;
+	border-color: #a6c9e2 #a6c9e2 #a6c9e2 #a6c9e2;
+	border-collapse: separate;
+	text-align:left;
+	width:250px;
+	height:100px;
+}
+table.modaltable td {
+	border-width: 1px 1px 1px 1px;
+	padding: 1px 1px 1px 1px;
+	border-style: solid solid solid solid;
+	border-color: #a6c9e2 #a6c9e2 #a6c9e2 #a6c9e2;
+	-moz-border-radius: 0px 0px 0px 0px;
+	vertical-align:top;
+}
+
+
+
+img
+{
+    border-style: none;
+}
+
+.PopupCSS{
+    border: 1px solid #a6c9e2;
+    background:white;
+    padding: 20px 10px 10px 10px;
+    text-align:center;
+}
+
+.sapplabel
+{
+    height: 20px;
+    width: 200px;
+    display:inline-block;
+}

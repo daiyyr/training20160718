@@ -1,0 +1,18 @@
+﻿DELIMITER $$
+
+CREATE PROCEDURE create_log_rev()
+BEGIN
+    IF @log_rev_id IS NULL THEN
+    		IF @log_rev_user_id IS NULL THEN
+        			SET @log_rev_user_id = 0;
+        END IF;
+        INSERT INTO `log_revs`
+        		
+            (`log_rev_type`, `log_rev_user_id`, `log_rev_table`, `log_rev_table_id`, `log_rev_time`)
+                VALUES
+            (@log_rev_type, @log_rev_user_id, @log_rev_table, @log_rev_table_id, @log_rev_time);
+        SET @log_rev_id = LAST_INSERT_ID();
+    END IF;
+END$$
+
+DELIMITER ;

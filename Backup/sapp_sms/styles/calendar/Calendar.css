@@ -1,0 +1,44 @@
+.sappcalendar .ajax__calendar_container {padding:1px;cursor:default;width:170px;font-size:11px;text-align:center;font-family:tahoma,verdana,helvetica;}
+.sappcalendar .ajax__calendar_body {height:139px;width:170px;position:relative;overflow:hidden;margin:auto;}
+.sappcalendar .ajax__calendar_days, .ajax__calendar_months, .ajax__calendar_years {top:0px;left:0px;height:139px;width:170px;position:absolute;text-align:center;margin:auto;}
+.sappcalendar .ajax__calendar_days table tr td, .ajax__calendar_months table tr td, .ajax__calendar_years table tr td { padding:0; margin:0; } 
+
+.sappcalendar .ajax__calendar_container {border:1px solid #646464;background-color:#ffffff;color:#000000;}
+.sappcalendar .ajax__calendar_container TABLE {padding:0px;margin:0px;font-size:11px;}
+.sappcalendar .ajax__calendar_container TD {padding:0px;margin:0px;font-size:11px;}
+.sappcalendar .ajax__calendar_header {height:20px;width:100%;}
+.sappcalendar .ajax__calendar_prev {cursor:pointer;width:15px;height:15px;float:left;background-repeat:no-repeat;background-position:50% 50%;background-image:url(arrow-left.gif);}
+.sappcalendar .ajax__calendar_next {cursor:pointer;width:15px;height:15px;float:right;background-repeat:no-repeat;background-position:50% 50%;background-image:url(arrow-right.gif);}
+.sappcalendar .ajax__calendar_title {cursor:pointer;font-weight:bold; margin-left:15px; margin-right:15px;}
+.sappcalendar .ajax__calendar_footer {height:15px;}
+.sappcalendar .ajax__calendar_today {cursor:pointer;padding-top:3px;}
+.sappcalendar .ajax__calendar_dayname {height:17px;width:17px;text-align:right;padding:0 2px;}
+.sappcalendar .ajax__calendar_day {height:17px;width:18px;text-align:right;padding:0 2px;cursor:pointer;}
+.sappcalendar .ajax__calendar_month {height:44px;width:40px;text-align:center;cursor:pointer;overflow:hidden;}
+.sappcalendar .ajax__calendar_year {height:44px;width:40px;text-align:center;cursor:pointer;overflow:hidden;}
+
+.sappcalendar .ajax__calendar_active .ajax__calendar_day {background-color:#04396E;border-color:#0066cc;color:#ffffff;}
+.sappcalendar .ajax__calendar_active .ajax__calendar_month {background-color:#04396E;border-color:#0066cc;color:#ffffff;}
+.sappcalendar .ajax__calendar_active .ajax__calendar_year {background-color:#04396E;border-color:#0066cc;color:#ffffff;}
+
+/* styles for calendar today */
+.sappcalendar .ajax__calendar_today .ajax__calendar_day {background-color:#80C0FF;}
+.sappcalendar .ajax__calendar_today .ajax__calendar_month {background-color:#80C0FF;}
+.sappcalendar .ajax__calendar_today .ajax__calendar_year {background-color:#80C0FF;}
+
+.sappcalendar .ajax__calendar_other .ajax__calendar_day {background-color:#ffffff;border-color:#ffffff;color:#646464;}
+.sappcalendar .ajax__calendar_other .ajax__calendar_year {background-color:#ffffff;border-color:#ffffff;color:#646464;}
+
+.sappcalendar .ajax__calendar_hover .ajax__calendar_day {background-color:#edf9ff;border-color:#daf2fc;color:#0066cc;}
+.sappcalendar .ajax__calendar_hover .ajax__calendar_month {background-color:#edf9ff;border-color:#daf2fc;color:#0066cc;}
+.sappcalendar .ajax__calendar_hover .ajax__calendar_year {background-color:#edf9ff;border-color:#daf2fc;color:#0066cc;}
+
+.sappcalendar .ajax__calendar_hover .ajax__calendar_title {color:#0066cc;}
+.sappcalendar .ajax__calendar_hover .ajax__calendar_today {color:#0066cc;}
+
+/* styles for invalid dates as defined by startDate and endDate*/
+.sappcalendar .ajax__calendar_invalid .ajax__calendar_day {background-color:#ffffff;border-color:#ffffff; color:#646464; text-decoration:line-through; cursor:default;}
+.sappcalendar .ajax__calendar_invalid .ajax__calendar_month {background-color:#ffffff;border-color:#ffffff; color:#646464; text-decoration:line-through; cursor:default;}
+.sappcalendar .ajax__calendar_invalid .ajax__calendar_year {background-color:#ffffff;border-color:#ffffff; color:#646464; text-decoration:line-through; cursor:default;}
+.sappcalendar .ajax__calendar_invalid .ajax__calendar_today  {visibility:hidden; cursor:default;}
+

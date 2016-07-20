@@ -1,0 +1,120 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="master.master.cs" Inherits="sapp_sms.master" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <link rel="stylesheet" type="text/css" href="styles/master.css" />
+    <link rel="stylesheet" type="text/css" href="styles/jquery.jdMenu.css" />
+    <link rel="stylesheet" type="text/css" href="styles/calendar/Calendar.css" />
+    <script src="scripts/packages/jquery-1.5.2.min.js" type="text/javascript"></script>
+    <script src="scripts/packages/jquery.bgiframe.js" type="text/javascript"></script>
+    <script src="scripts/packages/jquery.dimensions.js" type="text/javascript"></script>
+    <script src="scripts/packages/jquery.jdMenu.js" type="text/javascript"></script>
+    <script src="scripts/packages/jquery.positionBy.js" type="text/javascript"></script>
+    <script src="Scripts/packages/grid.locale-en.js" type="text/javascript"></script>
+    <script src="Scripts/packages/jquery.jqGrid.min.js" type="text/javascript"></script>
+    <script src="Scripts/packages/json2-min.js" type="text/javascript"></script>
+    <script src="scripts/packages/jquery-ui-1.8.18.custom.min.js" type="text/javascript"></script>
+    <script src="scripts/master.js" type="text/javascript"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('ul.jd_menu').jdMenu();
+            $("#mastertab").tabs();
+            $("#titletabs").html(getCookie("bodycorpcode") +' - '+ document.getElementsByTagName("title")[0].innerHTML);
+        });
+        function getCookie(cname) {
+            var name = cname + "=";
+            var ca = document.cookie.split(';');
+            for (var i = 0; i < ca.length; i++) {
+                var c = ca[i];
+                while (c.charAt(0) == ' ') c = c.substring(1);
+                if (c.indexOf(name) == 0) return c.substring(name.length, c.length);
+            }
+            return "";
+        }
+
+    </script>
+    <asp:ContentPlaceHolder ID="head" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body id="masterbody">
+    <form id="form1" runat="server">
+    <asp:ScriptManager ID="ScriptManager1" runat="server">
+        <Services>
+        </Services>
+    </asp:ScriptManager>
+    <div id="container">
+        <div id="header">
+            <div id="left_logo">
+                <asp:Image ID="ImageLogo" runat="server" CssClass="ImageLogo" ImageUrl="~/images/simpleapp-logo-t.png"
+                    ImageAlign="Middle" />
+            </div>
+            <div id="middle_msg">
+            </div>
+            <div id="right_login">
+                <asp:Panel runat="server" ID="AuthenticatedMessagePanel">
+                    <div id="message_board" runat="server">
+                    </div>
+                    <asp:Label runat="server" ID="WelcomeBackMessage"></asp:Label>
+                    <asp:DropDownList ID="DropDownList1" runat="server" AutoPostBack="True" 
+                        onselectedindexchanged="DropDownList1_SelectedIndexChanged" Width="150px">
+                    </asp:DropDownList>
+                    <asp:Button ID="logout" runat="server" Text="logout" OnClick="logout_Click" />
+                </asp:Panel>
+                <asp:Panel runat="Server" ID="AnonymousMessagePanel">
+                    <asp:HyperLink runat="server" ID="lnkLogin" Text="Log In" NavigateUrl="~/Login.aspx"></asp:HyperLink>
+                </asp:Panel>
+            </div>
+        </div>
+        <div id="main">
+            <div id="menu" runat="server">
+                <ul class="jd_menu">
+                    <li>Core
+                        <ul>
+                            <li><a href="http://www.google.com">Projects</a></li>
+                            <li><a href="http://www.google.com">Clients</a></li>
+                            <li><a href="http://www.google.com">Accounts</a></li>
+                            <li><a href="http://www.google.com">Batch</a></li>
+                        </ul>
+                    </li>
+                    <li>Finance
+                        <ul>
+                            <li><a href="invoices.aspx?jqpars=EAAAANWHBkCpZDoavhhJ3W8ynIEg8bgvMh%2bzhQbQUqB1mcUQCDX7jpz6lEn70xKQHKfjqfYzrYzD0B%2bknAgZn2u6JPjQXR9dGIjTAmJZGKQOrsJV">
+                                Invoices</a></li>
+                        </ul>
+                    </li>
+                    <li>Administration
+                        <ul>
+                            <li><a href="">Categories</a></li>
+                            <li><a href="">Freqs</a></li>
+                            <li><a href="">Plans</a></li>
+                            <li><a href="http://www.google.com">Packages</a></li>
+                            <li><a href="">Suppliers</a></li>
+                            <li><a href="">Products</a></li>
+                            <li><a href="">Users</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+                <li class="ui-state-default ui-corner-top">
+                    <div id="titletabs">
+                    </div>
+                </li>
+            </ul>
+            <div id="content">
+                <asp:ContentPlaceHolder ID="ContentPlaceHolder1" runat="server">
+                </asp:ContentPlaceHolder>
+            </div>
+            <div id="rooter">
+            </div>
+        </div>
+        <div id="footer">Copyright © 2012-2016 STRATA MANAGEMENT SOFTWARE LIMITED. All Rights Reserved. <a href="#" onclick="window.open('copyright.htm','_blank');">DISCLAIMER</a>
+        </div>
+        <asp:Panel ID="PanelTask" runat="server" BackColor="White" BorderColor="#a6c9e2"
+            BorderStyle="Solid" Width="230px">
+            <asp:Literal ID="LiteralTask" runat="server" Visible="false"></asp:Literal>
+        </asp:Panel>
+    </form>
+</body>
+</html>

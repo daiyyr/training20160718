@@ -1,0 +1,42 @@
+﻿DELIMITER $$
+
+CREATE TRIGGER `bodycorp_delete` AFTER DELETE ON `bodycorps` 
+    FOR EACH ROW BEGIN
+    		SET @log_rev_type='DELETE', @log_rev_table_id=OLD.`bodycorp_id`;
+        CALL create_log_rev();
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_code', OLD.`bodycorp_code`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_name', OLD.`bodycorp_name`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_gst', OLD.`bodycorp_gst`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_account_id', OLD.`bodycorp_account_id`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_payee', OLD.`bodycorp_payee`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_agm_date', OLD.`bodycorp_agm_date`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_agm_time', OLD.`bodycorp_agm_time`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_committee_date', OLD.`bodycorp_committee_date`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_committee_time', OLD.`bodycorp_committee_time`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_egm_date', OLD.`bodycorp_egm_date`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_egm_time', OLD.`bodycorp_egm_time`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_notes', OLD.`bodycorp_notes`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_begin_date', OLD.`bodycorp_begin_date`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_close_period_date', OLD.`bodycorp_close_period_date`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_inactive', OLD.`bodycorp_inactive`);
+        INSERT INTO `log_master` (`log_master_rev_id`, `log_master_column`, `log_master_data`) 
+        VALUES (@log_rev_id, 'bodycorp_inactive_date', OLD.`bodycorp_inactive_date`);
+    END;
+$$
+
+DELIMITER ;

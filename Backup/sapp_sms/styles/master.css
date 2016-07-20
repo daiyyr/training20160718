@@ -1,0 +1,123 @@
+﻿/*Style for body on masterpage*/
+#masterbody
+{
+	background-color:#666666; 
+	text-align:center;
+}
+/*Style for container on masterpage*/
+#container
+{
+	width:100%;
+	background-color:#666666;
+    font-family:"Tahoma"; 
+    font-size:12px;
+}
+/*Style for header on masterpage*/
+#header
+{
+	background-color:#eeeeee;
+	margin: 0 auto;
+	width:1143px;
+	height:100px;
+}
+#left_logo
+{
+	width:125px;
+	height:100px;
+	float:left;clear:left;overflow:hidden;
+    vertical-align : middle; display : table-cell;
+}
+.ImageLogo
+{
+	margin: 8.5px 0 8.5px 0;
+}
+.menu_item
+{
+	text-align:left;
+}
+#middle_msg
+{
+	
+	width:818px;
+	height:100px;
+	float:left; overflow:hidden;
+}
+#right_login
+{
+	width:200px;
+	height:100px;
+	float:right;clear:right;overflow:hidden;
+}
+/*Style for main on masterpage*/
+#main
+{
+	background-color:#eeeeee;
+	margin: 0 auto;
+	width:1143px;
+	height:950px;
+}
+#menu
+{
+	background-color:#5695b5;
+	text-align:left;
+}
+#content
+{
+	
+}
+#login
+{
+    width:250px;
+    margin:auto;
+}
+/*Style for rooter on masterpage*/
+#rooter
+{
+	background-color:#eeeeee;
+	margin: 0 auto;
+	width:1143px;
+	height:50px;
+}
+
+/* Add 31/03/2016 for footer*/
+#footer
+{
+    position: relative;
+	height: 30px;
+	bottom: 30px;
+}
+
+.sappcombobox .ajax__combobox_inputcontainer .ajax__combobox_textboxcontainer input
+{
+    margin: 0;
+    border: solid 1px #7F9DB9;
+    border-right: 0px none;
+    padding: 1px 0px 0px 5px;
+    font-size: 13px;
+    height: 18px;
+    position: relative;       
+}
+
+.sappcombobox .ajax__combobox_inputcontainer .ajax__combobox_buttoncontainer button
+{
+    margin: 0;
+    padding: 0;
+    background-image: url(windows-arrow.gif);
+    background-position: top left;
+    border: 0px none;
+    height: 21px;
+    width: 21px;
+}
+
+.sappcombobox .ajax__combobox_itemlist
+{
+    border-color: #7F9DB9;
+}
+
+#popup
+{
+	background-color:#eeeeee;
+	margin: 0 auto;
+	width:600px;
+	height:300px;
+}

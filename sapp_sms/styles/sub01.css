@@ -1,0 +1,8 @@
+﻿/*Style for body on masterpage*/
+#subbody
+{
+	background-color:#eeeeee; 
+	text-align:center;
+	font-family:"Tahoma"; 
+    font-size:12px;
+}
