@@ -50,6 +50,11 @@ namespace sapp_sms
                         BalanceSheet(args.Split('|'));
                         Page.Title = "Balance Sheet Report";
                     }
+                    else if (report_id == "fakebalancesheet")
+                    {
+                        FakeBalanceSheet(args.Split('|'));
+                        Page.Title = "Fake Balance Sheet Report";
+                    }
                     else if (report_id == "chartofaccount")
                     {
                         COAReport(args.Split('|'));
@@ -582,6 +587,23 @@ namespace sapp_sms
                 string start_date = args[1];
                 string end_date = args[2];
                 ReportBalanceSheet Report = new ReportBalanceSheet(constr, Server.MapPath("templates/balancesheet.rdlc"), ReportViewer1);
+                Report.SetReportInfo(Convert.ToInt32(bodycorp_id), Convert.ToDateTime(start_date), Convert.ToDateTime(end_date));
+                Report.Print();
+            }
+            catch (Exception ex)
+            {
+                HttpContext.Current.Session["ErrorUrl"] = HttpContext.Current.Request.Url.ToString(); HttpContext.Current.Session["Error"] = ex; HttpContext.Current.Response.Redirect("~/error.aspx", false);
+            }
+        }
+        private void FakeBalanceSheet(string[] args)
+        {
+            try
+            {
+                string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+                string bodycorp_id = args[0];
+                string start_date = args[1];
+                string end_date = args[2];
+                ReportBalanceSheet Report = new ReportBalanceSheet(constr, Server.MapPath("templates/fakebalancesheet.rdlc"), ReportViewer1);
                 Report.SetReportInfo(Convert.ToInt32(bodycorp_id), Convert.ToDateTime(start_date), Convert.ToDateTime(end_date));
                 Report.Print();
             }

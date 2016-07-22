@@ -377,6 +377,223 @@ namespace sapp_sms
             HttpContext.Current.Session["DiscountDT"] = dt;
         }
 
+        public void UpDateDiscount(string Invcode)
+        {
+            Odbc o = new Odbc(constr);
+            DataTable dt = (DataTable)Session["DiscountDT"];
+            string grossid = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "gl_transaction_id");
+            if (!grossid.Equals(""))
+            {
+                int Grossglid = int.Parse(grossid);
+                string invID = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "invoice_master_id");
+                string g = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "gl_transaction_net");
+                if (g.Equals(""))
+                    g = "0";
+                if (g.Equals("0") || g.Equals("0.00"))
+                {
+                    DeleteDiscount(Invcode);
+                }
+                else
+                {
+                    decimal gross = decimal.Parse(g);
+                    //string gltaxid = (Grossglid - 1).ToString();
+                    //string glnetid = (Grossglid - 2).ToString();
+
+                    string glgrossid = Grossglid.ToString();
+
+
+                    DataTable sysDT = ReportDT.getTable(constr, "system");
+                    string taxcode = ReportDT.GetDataByColumn(sysDT, "system_code", "GST Output", "system_value");
+                    string discountcode = ReportDT.GetDataByColumn(sysDT, "system_code", "DISCOUNTCHARCODE", "system_value");
+                    DataTable chartDT = ReportDT.getTable(constr, "chart_master");
+                    string did = AdFunction.GENERALDEBTOR_ChartID;
+                    string taxtid = ReportDT.GetDataByColumn(chartDT, "chart_master_code", taxcode, "chart_master_id");
+                    string disid = ReportDT.GetDataByColumn(chartDT, "chart_master_code", discountcode, "chart_master_id");
+                    string reference = Journal.GetNextNumber();
+                    Receipt receipt = new Receipt(constr);
+                    string receipt_id = Request.QueryString["receiptid"];
+                    receipt.LoadData(Convert.ToInt32(receipt_id));
+                    decimal gst = decimal.Parse(ReportDT.GetDataByColumn(sysDT, "system_code", "GST", "system_value"));
+                    decimal tax = gross / 115 * 15;
+                    tax = AdFunction.Rounded(tax.ToString());
+                    decimal net = gross - tax;
+                    tax = -tax;
+                    net = -net;
+
+
+                    string sql = "select * from gl_transactions where gl_transaction_id=" + glgrossid;
+
+                    DataTable DT1 = o.ReturnTable(sql, "D1");
+                    string dt1Ref = "";
+                    if (DT1.Rows.Count == 1)
+                    {
+                        dt1Ref = DT1.Rows[0]["gl_transaction_ref"].ToString();
+                    }
+                    string sql2 = "select * from gl_transactions where gl_transaction_ref='" + dt1Ref + "'";
+
+                    DataTable DT2 = o.ReturnTable(sql2, "D2");
+
+                    string gltaxid = ReportDT.GetDataByColumn(DT2, "gl_transaction_chart_id", taxtid, "gl_transaction_id");
+                    string glnetid = ReportDT.GetDataByColumn(DT2, "gl_transaction_chart_id", disid, "gl_transaction_id");
+
+                    if (gltaxid.Equals("") || glnetid.Equals(""))
+                    {
+                        throw new Exception("Discount Journal Error");
+
+                    }
+
+
+
+
+                    string tsql = "Update gl_transactions set gl_transaction_net=" + tax + " where gl_transaction_id=" + gltaxid;
+                    string nsql = "Update gl_transactions set gl_transaction_net=" + net + " where gl_transaction_id=" + glnetid;
+                    string gsql = "Update gl_transactions set gl_transaction_net=" + gross + " where gl_transaction_id=" + glgrossid;
+                    o.ExecuteScalar(tsql);
+                    o.ExecuteScalar(nsql);
+                    o.ExecuteScalar(gsql);
+                }
+                //UpdatePaid(-gross, invID);
+            }
+            else
+            {
+                string invid = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "invoice_master_id");
+                InsertDiscount(invid);
+            }
+        }
+        public void InsertDiscount(string invID)
+        {
+            if (Session["DiscountDT"] != null)
+            {
+                if (!invID.Equals(""))
+                {
+                    // Add 7/6/2016 Load rate of Discount
+                    Sapp.SMS.System sys = new Sapp.SMS.System(AdFunction.conn);
+                    sys.LoadData("GST");
+                    decimal gst_rate = decimal.Parse(sys.SystemValue);
+
+                    Bodycorp body = new Bodycorp(AdFunction.conn);
+                    body.LoadData(Convert.ToInt32(Request.Cookies["bodycorpid"].Value));
+
+                    DataTable dtDiscount = (DataTable)Session["DiscountDT"];
+                    DataTable dt = ReportDT.FilterDT(dtDiscount, "invoice_master_id=" + invID);
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        string discountValue = dr["gl_transaction_net"].ToString();
+                        if (discountValue.Equals(""))
+                        {
+                            discountValue = "0";
+                        }
+                        decimal dv = decimal.Parse(discountValue);
+                        if (dv != 0)
+                        {
+                            DataTable sysDT = ReportDT.getTable(constr, "system");
+                            string taxcode = ReportDT.GetDataByColumn(sysDT, "system_code", "GST Output", "system_value");
+                            string discountcode = ReportDT.GetDataByColumn(sysDT, "system_code", "DISCOUNTCHARCODE", "system_value");
+                            DataTable chartDT = ReportDT.getTable(constr, "chart_master");
+                            string did = AdFunction.GENERALDEBTOR_ChartID;
+                            string taxtid = ReportDT.GetDataByColumn(chartDT, "chart_master_code", taxcode, "chart_master_id");
+                            string disid = ReportDT.GetDataByColumn(chartDT, "chart_master_code", discountcode, "chart_master_id");
+                            string reference = Journal.GetNextNumber();
+                            Receipt receipt = new Receipt(constr);
+                            string receipt_id = Request.QueryString["receiptid"];
+                            receipt.LoadData(Convert.ToInt32(receipt_id));
+                            decimal gst = decimal.Parse(ReportDT.GetDataByColumn(sysDT, "system_code", "GST", "system_value"));
+                            decimal discountv = decimal.Parse(discountValue);
+                            decimal gross = discountv;
+
+                            // Update 7/6/2016
+                            //decimal tax = gross / 115 * 15;
+                            decimal tax = 0m;
+                            if (body.BodycorpNoGST == false)
+                            {
+                                tax = gross * gst_rate / (1.0m + gst_rate);
+                                tax = AdFunction.Rounded(tax.ToString());
+                            }
+
+                            decimal net = discountv - tax;
+                            DataTable reglDT = ReportDT.getTable(constr, "gl_transactions");
+                            reglDT = ReportDT.FilterDT(reglDT, "gl_transaction_type_id=6 and gl_transaction_chart_id=" + disid);
+
+                            InsertDiscount(reference, receipt.ReceiptBodycorpId, net, tax, gross, taxtid, did, disid, invID, receipt_id);
+                        }
+                    }
+                }
+
+            }
+        }
+
+        public void InsertDiscount(string reference, int bodycorpid, decimal net, decimal tax, decimal gross, string tid, string nid, string gid, string InvID, string reid)
+        {
+            if (Session["DiscountDT"] != null)
+            {
+                Odbc o = new Odbc(constr);
+                DataTable recepitDT = ReportDT.getTable(constr, "receipts");
+                string unitid = ReportDT.GetDataByColumn(recepitDT, "receipt_id", Request.QueryString["receiptid"].ToString(), "receipt_unit_id");
+                DataTable chartDT = ReportDT.getTable(constr, "chart_master");
+                string login = System.Web.HttpContext.Current.User.Identity.Name;
+                Sapp.General.User user = new Sapp.General.User(Sapp.SMS.AdFunction.constr_general);
+                user.LoadData(login);
+                string glsqlnet = "INSERT INTO gl_transactions (gl_transaction_ref_type_id,gl_transaction_type_id, gl_transaction_ref, gl_transaction_chart_id, gl_transaction_bodycorp_id, gl_transaction_net, gl_transaction_tax, gl_transaction_gross, gl_transaction_date,gl_transaction_description,gl_transaction_unit_id,gl_transaction_createdate,gl_transaction_user_id)";
+                glsqlnet += " VALUES   (6,6,'" + reference + "'," + gid + "," + bodycorpid + "," + -net + ",0,0," + DBSafeUtils.DateTimeToSQL(LabelDate.Text) + ",'" + "Discount Offered" + "'," + unitid + ",'" + DateTime.Now.ToString("yyyy-MM-dd") + "'," + user.UserId.ToString() + ")";
+                string glsqltax = "INSERT INTO gl_transactions (gl_transaction_ref_type_id,gl_transaction_type_id, gl_transaction_ref, gl_transaction_chart_id, gl_transaction_bodycorp_id, gl_transaction_net, gl_transaction_tax, gl_transaction_gross, gl_transaction_date,gl_transaction_description,gl_transaction_unit_id,gl_transaction_createdate,gl_transaction_user_id)";
+                glsqltax += " VALUES   (6,6,'" + reference + "'," + tid + "," + bodycorpid + "," + -tax + ",0,0," + DBSafeUtils.DateTimeToSQL(LabelDate.Text) + ",'" + "Discount Offered" + "'," + unitid + ",'" + DateTime.Now.ToString("yyyy-MM-dd") + "'," + user.UserId.ToString() + ")";
+                string glsqlgross = "INSERT INTO gl_transactions (gl_transaction_ref_type_id,gl_transaction_type_id, gl_transaction_ref, gl_transaction_chart_id, gl_transaction_bodycorp_id, gl_transaction_net, gl_transaction_tax, gl_transaction_gross, gl_transaction_date,gl_transaction_description,gl_transaction_unit_id,gl_transaction_createdate,gl_transaction_user_id)";
+                glsqlgross += " VALUES   (6,6,'" + reference + "'," + nid + "," + bodycorpid + "," + gross + ",0,0," + DBSafeUtils.DateTimeToSQL(LabelDate.Text) + ",'" + "Discount Offered" + "'," + unitid + ",'" + DateTime.Now.ToString("yyyy-MM-dd") + "'," + user.UserId.ToString() + ")";
+
+
+                string idsql = "SELECT LAST_INSERT_ID()";
+                o.ReturnTable(glsqlnet, "NetDT");
+                string glnetID = Convert.ToInt32(o.ExecuteScalar(idsql)).ToString();
+                o.ReturnTable(glsqltax, "NetDT");
+                string gltaxID = Convert.ToInt32(o.ExecuteScalar(idsql)).ToString();
+                o.ReturnTable(glsqlgross, "NetDT");
+                string glgrossID = Convert.ToInt32(o.ExecuteScalar(idsql)).ToString();
+                string recGL3 = " INSERT INTO receipt_gls (receipt_gl_receipt_id, receipt_gl_gl_id, receipt_gl_paid) VALUES   (" + reid + "," + glgrossID + ",0)";
+                o.ExecuteScalar(recGL3);
+                DataTable invoice = ReportDT.getTable(constr, "invoice_master");
+                string invGL3 = "INSERT INTO invoice_gls (invoice_gl_invoice_id, invoice_gl_gl_id, invoice_gl_paid) VALUES   (" + InvID + "," + glgrossID + ",0)";
+                o.ExecuteScalar(invGL3);
+                //UpdatePaid(gross, InvID);
+            }
+        }
+        public void DeleteDiscount(string Invcode)
+        {
+            Odbc o = new Odbc(constr);
+            DataTable dt = (DataTable)Session["DiscountDT"];
+            string gid = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "gl_transaction_id");
+            if (!gid.Equals(""))
+            {
+                int glid = int.Parse(gid);
+                string glgrossid = glid.ToString();
+                string referencr = ReportDT.GetDataByColumn(ReportDT.getTable(AdFunction.conn, "gl_transactions"), "gl_transaction_id", gid, "gl_transaction_ref");
+                string rsql = "delete FROM  receipt_gls where receipt_gl_gl_id =" + glgrossid;
+                string isql = "delete FROM  invoice_gls where invoice_gl_gl_id =" + glgrossid;
+                string tsql = "delete FROM  gl_transactions where gl_transaction_ref='" + referencr + "'";
+                o.ExecuteScalar(rsql);
+                o.ExecuteScalar(isql);
+                o.ExecuteScalar(tsql);
+            }
+        }
+        public void DeleteDiscountByReceipt(string receiptId)
+        {
+            Odbc o = new Odbc(constr);
+            DataTable dt = (DataTable)Session["DiscountDT"];
+  //          string gid = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "gl_transaction_id");
+            string gid = "";
+            if (!gid.Equals(""))
+            {
+                int glid = int.Parse(gid);
+                string glgrossid = glid.ToString();
+                string referencr = ReportDT.GetDataByColumn(ReportDT.getTable(AdFunction.conn, "gl_transactions"), "gl_transaction_id", gid, "gl_transaction_ref");
+                string rsql = "delete FROM  receipt_gls where receipt_gl_gl_id =" + glgrossid;
+                string isql = "delete FROM  invoice_gls where invoice_gl_gl_id =" + glgrossid;
+                string tsql = "delete FROM  gl_transactions where gl_transaction_ref='" + referencr + "'";
+                o.ExecuteScalar(rsql);
+                o.ExecuteScalar(isql);
+                o.ExecuteScalar(tsql);
+            }
+        }
+
         #endregion discount
 
         [System.Web.Services.WebMethod]
@@ -791,6 +1008,10 @@ namespace sapp_sms
 
                 glts_related.GLTempList.CopyTo(pageList);
 
+                //dyyr
+                Bodycorp body = new Bodycorp(AdFunction.conn);
+                body.LoadData(Convert.ToInt32(Request.Cookies["bodycorpid"].Value));
+
                 // Add 20/05/2016
            //     string offerDiscount = HiddenOfferDiscount.Value; 
 
@@ -813,12 +1034,21 @@ namespace sapp_sms
                         {
                             InvoiceMaster invoice = new InvoiceMaster(constr);
                             invoice.LoadData(Convert.ToInt32(id));
+                            if (body.BodycorpDiscount)
+                            {
+                                DeleteDiscount(invoice.InvoiceMasterNum);
+                            }
                             Allocation.Allocate(im, invoice, Convert.ToDecimal("0"));
                         }
                         if (type.Equals("Receipt"))
                         {
                             Receipt r = new Receipt(constr);
                             r.LoadData(Convert.ToInt32(id));
+                            if (body.BodycorpDiscount)
+                            {
+                                DeleteDiscount(im.InvoiceMasterNum);
+                          //      DeleteDiscount(r.InvoiceMasterNum);   dyyr
+                            }
                             Allocation.Allocate(im, r, Convert.ToDecimal("0"));
                         }
                         if (type.Equals("Journal"))
@@ -861,14 +1091,12 @@ namespace sapp_sms
                 // Offer discount
      //           if ("true".Equals(HiddenOfferDiscount.Value))  
 
-                //dyyr
-                Bodycorp body = new Bodycorp(AdFunction.conn);
-                body.LoadData(Convert.ToInt32(Request.Cookies["bodycorpid"].Value));
+                
 
-                if (body.BodycorpDiscount)
-                {
-                    processDiscount(im, pageList);
-                }
+       //         if (body.BodycorpDiscount)
+       //         {
+       //             processDiscount(im, pageList);
+       //         }
 
                 for (int i = 0; i < pageList.Length; i++)
                 {
@@ -886,18 +1114,29 @@ namespace sapp_sms
                         }
                     }
 
+                    //test what the discoutDT is in session
+                    DataTable dt = (DataTable)Session["DiscountDT"];
+
                     if (!exist)
                     {//INSERT
                         if (type.Equals("Invoice"))
                         {
                             InvoiceMaster invoice = new InvoiceMaster(constr);
                             invoice.LoadData(Convert.ToInt32(id));
+                            if (body.BodycorpDiscount)
+                            {
+                                InsertDiscount(id);
+                            }
                             Allocation.Allocate(im, invoice, Convert.ToDecimal(paid));
                         }
                         if (type.Equals("Receipt"))
                         {
                             Receipt r = new Receipt(constr);
                             r.LoadData(Convert.ToInt32(id));
+                            if (body.BodycorpDiscount)
+                            {
+                                InsertDiscount(id);
+                            }
                             Allocation.Allocate(im, r, Convert.ToDecimal(paid));
                         }
                         if (type.Equals("Journal"))
@@ -936,12 +1175,21 @@ namespace sapp_sms
                         {
                             InvoiceMaster invoice = new InvoiceMaster(constr);
                             invoice.LoadData(Convert.ToInt32(id));
+                            if (body.BodycorpDiscount)
+                            {
+                                UpDateDiscount(invoice.InvoiceMasterNum);
+                            }
                             Allocation.Allocate(im, invoice, Convert.ToDecimal(paid));
                         }
                         if (type.Equals("Receipt"))
                         {
                             Receipt r = new Receipt(constr);
                             r.LoadData(Convert.ToInt32(id));
+                            if (body.BodycorpDiscount)
+                            {
+                                //dyyr
+                                UpDateDiscount(im.InvoiceMasterNum);
+                            }
                             Allocation.Allocate(im, r, Convert.ToDecimal(paid));
                         }
                         if (type.Equals("Journal"))

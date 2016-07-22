@@ -88,6 +88,12 @@
             </tr>
             <tr>
                 <td colspan="4">
+                    <asp:CheckBox ID="CheckBoxFakeBalanceSheet" runat="server" />
+                    <b>Fake Balance Sheet</b>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="4">
                     <asp:CheckBox ID="CheckBoxTrialBalance" runat="server" />
                     <b>Trial Balance</b>&nbsp;
                     <asp:DropDownList ID="TB_DL" runat="server">

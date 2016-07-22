@@ -1982,7 +1982,9 @@
   <ItemGroup>
     <EmbeddedResource Include="templates\activityreport.rdlc" />
     <EmbeddedResource Include="templates\AF.rdlc" />
-    <EmbeddedResource Include="templates\balancesheet.rdlc" />
+    <EmbeddedResource Include="templates\balancesheet.rdlc">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="templates\BMPF.rdlc" />
     <EmbeddedResource Include="templates\BRecoinciliationDetail.rdlc" />
     <EmbeddedResource Include="templates\BS.rdlc" />
@@ -1992,6 +1994,9 @@
     <EmbeddedResource Include="templates\CreditorAged.rdlc" />
     <EmbeddedResource Include="templates\CreditorAgedInv.rdlc" />
     <EmbeddedResource Include="templates\debtorlist.rdlc" />
+    <EmbeddedResource Include="templates\fakebalancesheet.rdlc">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
     <EmbeddedResource Include="templates\GSTCash.rdlc" />
     <EmbeddedResource Include="templates\GSTInvoice.rdlc" />
     <EmbeddedResource Include="templates\GSTReconciliation2.rdlc" />

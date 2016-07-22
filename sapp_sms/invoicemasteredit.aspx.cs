@@ -932,15 +932,17 @@ namespace sapp_sms
             //dyyr
             if (!ComboBoxDebtor.SelectedValue.Equals("null"))
             {
-                Odbc o = new Odbc(AdFunction.conn);
-                DataTable dt = o.ReturnTable("SELECT unit_master_id FROM `unit_master` where unit_master_debtor_id=" + ComboBoxDebtor.SelectedValue, "u1");
-
-                if (dt.Rows.Count == 0) //no unit debtor
+                string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
+                AjaxControlUtils.SetupComboBox(ComboBoxUnit,
+                    "SELECT `unit_master_id` AS `ID`, `unit_master_code` AS `Code` FROM `unit_master`,`property_master` where " +
+                    "unit_master_debtor_id=" + ComboBoxDebtor.SelectedValue +
+                    " AND property_master_id=unit_master_property_id AND property_master_bodycorp_id=" + ComboBoxBodycorp.SelectedValue +
+                    " AND unit_master_inactive_date is null and unit_master_type_id <>5",
+                    "ID", "Code", constr, true);
+                if (ComboBoxUnit.Items.Count > 1)
                 {
-                    return;
+                    ComboBoxUnit.SelectedValue = ComboBoxUnit.Items[1].Value;
                 }
-                string unitid = dt.Rows[0]["unit_master_id"].ToString();
-                ComboBoxUnit.SelectedValue = unitid;
             }
         }
 
@@ -949,11 +951,11 @@ namespace sapp_sms
             if (!ComboBoxUnit.SelectedValue.Equals("null"))
             {
                 Odbc o = new Odbc(AdFunction.conn);
-                DataTable dt = o.ReturnTable("SELECT * FROM `unit_master` where unit_master_id=" + ComboBoxUnit.SelectedValue, "y1");
+                DataTable dt = o.ReturnTable("SELECT unit_master_debtor_id FROM `unit_master` where unit_master_id=" + ComboBoxUnit.SelectedValue, "y1");
                 string did = dt.Rows[0]["unit_master_debtor_id"].ToString();
-                AdFunction.Debtor_ComboBox(ComboBoxDebtor);
+          //      AdFunction.Debtor_ComboBox(ComboBoxDebtor);
                 ComboBoxDebtor.SelectedValue = did;
-                ComboBoxDebtor.Enabled = false;
+              //  ComboBoxDebtor.Enabled = false;
             }
             else
             {

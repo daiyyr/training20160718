@@ -95,6 +95,7 @@ namespace sapp_sms
                 }
                 if (CheckBoxProfitLoss.Checked) { Response.Write(SetUrl("profitloss", args)); }
                 if (CheckBoxBalanceSheet.Checked) { Response.Write(SetUrl("balancesheet", args)); }
+                if (CheckBoxFakeBalanceSheet.Checked) { Response.Write(SetUrl("fakebalancesheet", args)); }
                 if (CheckBoxTrialBalance.Checked) { Response.Write(SetUrl("trialbalance", args + "|" + TB_DL.SelectedValue)); }
                 if (CheckBoxGST.Checked) { Response.Write(SetUrl("gstreport", args)); }
                 if (CheckBoxCashPosition.Checked) { Response.Write(SetUrl("cashposition", args)); }
