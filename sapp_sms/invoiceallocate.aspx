@@ -147,7 +147,7 @@
                         { name: 'Gross', index: 'Gross',align: 'left', search: true,  searchoptions: { sopt: ['cn', 'nc']}},
                         { name: 'Due', index: 'Due',  align: 'left', search: true,  searchoptions: { sopt: ['cn', 'nc']}},
                         { name: 'Paid', index: 'Paid',  editable:true, editrules:{custom:true, custom_func:ValidateRowData}, align: 'left', search: true,  searchoptions: { sopt: ['cn', 'nc']}},
-                        { name: 'Discount', index: 'Discount', editable:true, align: 'left', search: true,  searchoptions: { sopt: ['cn', 'nc']}}
+                        { name: 'Discount', index: 'Discount', editrules:{custom:true, custom_func: function (value, colName) {return DiscountOrNot(value, colName)}}, editable: true, align: 'left', search: true,  searchoptions: { sopt: ['cn', 'nc']}}
                     ]" rowNum="25" rowList="[5, 10, 25, 50, 100]" sortname="DueDate" sortorder="asc" viewrecords="true"
                             width="800" height="200" url="invoiceallocate.aspx/jqGridRelatedDataBind" hasID="false"
                             multiselect="false" editurl="invoiceallocate.aspx/SaveDataFromGrid" inlineNav="true"
@@ -187,8 +187,7 @@
                 </td>
             </tr>
         </table>
-        <script>
-
+        <script type="text/javascript">
             $("#10discount").click(function () {
                 var grid = jQuery("#" + GetClientId("jqGridRelated") + "_datagrid1");
                 var rowKey = grid.getGridParam("selrow");

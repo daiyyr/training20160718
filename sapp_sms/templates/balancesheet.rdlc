@@ -741,7 +741,6 @@
                         <PaddingBottom>2pt</PaddingBottom>
                       </Style>
                     </Textbox>
-                    <rd:Selected>true</rd:Selected>
                   </CellContents>
                 </TablixCell>
                 <TablixCell>
@@ -1037,7 +1036,7 @@
         </Paragraphs>
         <rd:DefaultName>AssetsT</rd:DefaultName>
         <Top>2.31987cm</Top>
-        <Left>10.56678cm</Left>
+        <Left>10.58788cm</Left>
         <Height>0.6cm</Height>
         <Width>4.65082cm</Width>
         <ZIndex>14</ZIndex>

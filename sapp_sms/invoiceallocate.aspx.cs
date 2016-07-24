@@ -32,6 +32,18 @@ namespace sapp_sms
                 JSUtils.RenderJSArrayWithCliendIds(Page, wc);
                 #endregion
 
+                //modified by dyyr @2016 07 24
+                Bodycorp body = new Bodycorp(AdFunction.conn);
+                body.LoadData(Convert.ToInt32(Request.Cookies["bodycorpid"].Value));
+                if (body.BodycorpDiscount)
+                {
+                    HiddenOfferDiscount.Value = "true";
+                }
+                else
+                {
+                    HiddenOfferDiscount.Value = "false";
+                }
+
                 if (!IsPostBack && Request.QueryString["id"] != null)
                 {
                     string id = "";
@@ -193,7 +205,9 @@ namespace sapp_sms
                 Hashtable items = gltran.GetData();
                 DataRow dr = dt.NewRow();
                 if (items["gl_transaction_id"].ToString()[0] != 'd'
-                    && isSystemDiscount(items["gl_transaction_ref"].ToString()) == false) // Update 15/03/2016 Add 'Discount' column
+                        && isSystemDiscount(items["gl_transaction_ref"].ToString()) == false // Update 15/03/2016 Add 'Discount' column
+                        && !(items["gl_transaction_description"].ToString().Contains("Discount Offered")) //modified by dyyr @2016 07 24
+                    ) 
                 {
                     dr["ID"] = items["gl_transaction_id"].ToString();
                     dr["RefType"] = items["gl_transaction_type_id"].ToString();
@@ -205,13 +219,25 @@ namespace sapp_sms
                     dr["Net"] = items["gl_transaction_net"].ToString();
                     dr["Tax"] = items["gl_transaction_tax"].ToString();
                     dr["Gross"] = items["gl_transaction_gross"].ToString();
-                    dr["Due"] = items["gl_transaction_due"].ToString();
+                    
                     dr["Paid"] = items["gl_transaction_paid"].ToString();
 
+
+                    //modified by dyyr @2016 07 23
                     if (HttpContext.Current.Session["Invoice_ID"] != null)
                     {
-                        dr["Discount"] = GetDiscount(dr["ID"].ToString(), HttpContext.Current.Session["Invoice_ID"].ToString());      // Update 15/03/2016 Add 'Discount' column
+                        dr["Discount"] = GetDiscount(dr["InvoiceNum"].ToString());      // Update 15/03/2016 Add 'Discount' column
                     }
+                    else
+                    {
+                        dr["Discount"] = "0";
+                    }
+                    decimal due = 0, discount = 0;
+                    decimal.TryParse(items["gl_transaction_due"].ToString(), out due);
+                    decimal.TryParse(dr["Discount"].ToString(), out discount);
+                    dr["Due"] = (due - discount).ToString();
+                    //modified end
+
                     
                     dt.Rows.Add(dr);
                 }
@@ -225,20 +251,20 @@ namespace sapp_sms
         }
 
         #region discount
-        public static void SettingDiscount(string discount, string invcode, string receipt_id)
+        public static void SettingDiscount(string discount, string receipt_ref)
         {
             DataTable dt = new DataTable();
             if (discount.Equals(""))
                 discount = "0";
             if (HttpContext.Current.Session["DiscountDT"] == null)
-                GetDiscountDT(receipt_id);
+                GetDiscountDT(HttpContext.Current.Session["Invoice_ID"].ToString());
             if (HttpContext.Current.Session["DiscountDT"] != null)
             {
                 dt = (DataTable)HttpContext.Current.Session["DiscountDT"];
                 bool checkupdate = false;
                 foreach (DataRow dr in dt.Rows)
                 {
-                    if (dr["invoice_master_num"].ToString().Equals(invcode))
+                    if (dr["receipt_ref"].ToString().Equals(receipt_ref))
                     {
                         dr["gl_transaction_net"] = discount;
                         checkupdate = true;
@@ -246,14 +272,18 @@ namespace sapp_sms
                 }
                 if (!checkupdate)
                 {
-                    if (!invcode.Contains("JNL"))
+                    if (!receipt_ref.Contains("JNL"))
                     {
                         string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
                         DataRow dr = dt.NewRow();
-                        dr["invoice_master_num"] = invcode;
+                        dr["receipt_ref"] = receipt_ref;
                         DataTable invDT = ReportDT.getTable(constr, "invoice_master");
-                        dr["invoice_master_id"] = HttpContext.Current.Session["Invoice_ID"];
+                        string invoice_master_num = ReportDT.GetDataByColumn(invDT, "invoice_master_id", HttpContext.Current.Session["Invoice_ID"].ToString(), "invoice_master_num");
+                        dr["invoice_master_num"] = invoice_master_num;
+                        dr["invoice_master_id"] = HttpContext.Current.Session["Invoice_ID"].ToString();
                         dr["gl_transaction_net"] = discount;
+                        DataTable receptDT = ReportDT.getTable(constr, "receipts");
+                        string receipt_id = ReportDT.GetDataByColumn(receptDT, "receipt_ref", receipt_ref, "receipt_id");
                         dr["receipt_gl_receipt_id"] = receipt_id;
                         dt.Rows.Add(dr);
                     }
@@ -269,7 +299,7 @@ namespace sapp_sms
         /// </summary>
         /// <param name="receipt_id">receipt id</param>
         /// <returns>discount amoun</returns>
-        public static string GetDiscount(string receipt_id, string invoice_id)
+        public static string GetDiscount(string receipt_ref)
         {
             string r = null;
             DataTable dt = new DataTable();
@@ -279,11 +309,10 @@ namespace sapp_sms
             }
             else
             {
-                GetDiscountDT(invoice_id);
+                GetDiscountDT(HttpContext.Current.Session["Invoice_ID"].ToString());
                 dt = (DataTable)HttpContext.Current.Session["DiscountDT"];
             }
-        //    r = ReportDT.GetDataByColumn(dt, "receipt_gl_receipt_id", receipt_id, "gl_transaction_net");
-            r = ReportDT.GetDataByColumn(dt, "invoice_master_id", invoice_id, "gl_transaction_net");
+            r = ReportDT.GetDataByColumn(dt, "receipt_ref", receipt_ref, "gl_transaction_net");
 
             if ("".Equals(r))
             {
@@ -358,15 +387,15 @@ namespace sapp_sms
         {
             string constr = ConfigurationManager.ConnectionStrings["constr"].ConnectionString;
             string sql = " SELECT gl_transactions.gl_transaction_id, gl_transactions.gl_transaction_type_id, gl_transactions.gl_transaction_net, ";
-            sql = sql + "        receipt_gls.receipt_gl_receipt_id, invoice_master.invoice_master_id, invoice_master.invoice_master_num, receipt_gls.receipt_gl_receipt_id ";
-            sql = sql + "  FROM gl_transactions, invoice_gls, receipt_gls, invoice_master ";
+            sql = sql + "        receipt_gls.receipt_gl_receipt_id, invoice_master.invoice_master_id, invoice_master.invoice_master_num, receipts.receipt_ref ";
+            sql = sql + "  FROM gl_transactions, invoice_gls, receipt_gls, invoice_master, receipts";
             sql = sql + "  WHERE gl_transactions.gl_transaction_id = invoice_gls.invoice_gl_gl_id ";
             sql = sql + "    AND invoice_gls.invoice_gl_gl_id = receipt_gls.receipt_gl_gl_id ";
             sql = sql + "    AND invoice_gls.invoice_gl_invoice_id = invoice_master.invoice_master_id ";
+            sql = sql + "    AND receipts.receipt_id = receipt_gls.receipt_gl_receipt_id ";
 
 
             sql = sql + "    AND (gl_transactions.gl_transaction_type_id = 6) ";
-      //      sql = sql + "    AND (gl_transactions.gl_transaction_type_id = 1) "; //dyyr
 
 
             //sql = sql + "    AND (receipt_gls.receipt_gl_receipt_id = " + reciptID + ")";
@@ -377,21 +406,21 @@ namespace sapp_sms
             HttpContext.Current.Session["DiscountDT"] = dt;
         }
 
-        public void UpDateDiscount(string Invcode)
+        public void UpDateDiscount(string receipt_ref)
         {
             Odbc o = new Odbc(constr);
             DataTable dt = (DataTable)Session["DiscountDT"];
-            string grossid = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "gl_transaction_id");
+            string grossid = ReportDT.GetDataByColumn(dt, "receipt_ref", receipt_ref, "gl_transaction_id");
             if (!grossid.Equals(""))
             {
                 int Grossglid = int.Parse(grossid);
-                string invID = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "invoice_master_id");
-                string g = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "gl_transaction_net");
+                string invID = ReportDT.GetDataByColumn(dt, "receipt_ref", receipt_ref, "invoice_master_id");
+                string g = ReportDT.GetDataByColumn(dt, "receipt_ref", receipt_ref, "gl_transaction_net");
                 if (g.Equals(""))
                     g = "0";
                 if (g.Equals("0") || g.Equals("0.00"))
                 {
-                    DeleteDiscount(Invcode);
+                    DeleteDiscount(receipt_ref);
                 }
                 else
                 {
@@ -411,7 +440,13 @@ namespace sapp_sms
                     string disid = ReportDT.GetDataByColumn(chartDT, "chart_master_code", discountcode, "chart_master_id");
                     string reference = Journal.GetNextNumber();
                     Receipt receipt = new Receipt(constr);
-                    string receipt_id = Request.QueryString["receiptid"];
+
+                    //dyyr modified @20160723
+                    //string receipt_id = Request.QueryString["receiptid"];
+                    string receipt_id = ReportDT.GetDataByColumn(dt, "receipt_ref", receipt_ref, "receipt_gl_receipt_id");
+                    
+
+
                     receipt.LoadData(Convert.ToInt32(receipt_id));
                     decimal gst = decimal.Parse(ReportDT.GetDataByColumn(sysDT, "system_code", "GST", "system_value"));
                     decimal tax = gross / 115 * 15;
@@ -456,15 +491,14 @@ namespace sapp_sms
             }
             else
             {
-                string invid = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "invoice_master_id");
-                InsertDiscount(invid);
+                InsertDiscount(receipt_ref);
             }
         }
-        public void InsertDiscount(string invID)
+        public void InsertDiscount(string receipt_ref)
         {
             if (Session["DiscountDT"] != null)
             {
-                if (!invID.Equals(""))
+                if (!receipt_ref.Equals(""))
                 {
                     // Add 7/6/2016 Load rate of Discount
                     Sapp.SMS.System sys = new Sapp.SMS.System(AdFunction.conn);
@@ -474,49 +508,58 @@ namespace sapp_sms
                     Bodycorp body = new Bodycorp(AdFunction.conn);
                     body.LoadData(Convert.ToInt32(Request.Cookies["bodycorpid"].Value));
 
-                    DataTable dtDiscount = (DataTable)Session["DiscountDT"];
-                    DataTable dt = ReportDT.FilterDT(dtDiscount, "invoice_master_id=" + invID);
-                    foreach (DataRow dr in dt.Rows)
+                    //dyyr modified @ 2016 07 23
+                    //DataTable dtDiscount = (DataTable)Session["DiscountDT"];
+                    //DataTable dt = ReportDT.FilterDT(dtDiscount, "receipt_ref=" + receipt_ref);
+                    DataTable dt = (DataTable)Session["DiscountDT"];
+              //      foreach (DataRow dr in dt.Rows)
+              //      {}
+
+                    string discountValue = ReportDT.GetDataByColumn(dt, "receipt_ref", receipt_ref, "gl_transaction_net");
+                    if (discountValue.Equals(""))
                     {
-                        string discountValue = dr["gl_transaction_net"].ToString();
-                        if (discountValue.Equals(""))
-                        {
-                            discountValue = "0";
-                        }
-                        decimal dv = decimal.Parse(discountValue);
-                        if (dv != 0)
-                        {
-                            DataTable sysDT = ReportDT.getTable(constr, "system");
-                            string taxcode = ReportDT.GetDataByColumn(sysDT, "system_code", "GST Output", "system_value");
-                            string discountcode = ReportDT.GetDataByColumn(sysDT, "system_code", "DISCOUNTCHARCODE", "system_value");
-                            DataTable chartDT = ReportDT.getTable(constr, "chart_master");
-                            string did = AdFunction.GENERALDEBTOR_ChartID;
-                            string taxtid = ReportDT.GetDataByColumn(chartDT, "chart_master_code", taxcode, "chart_master_id");
-                            string disid = ReportDT.GetDataByColumn(chartDT, "chart_master_code", discountcode, "chart_master_id");
-                            string reference = Journal.GetNextNumber();
-                            Receipt receipt = new Receipt(constr);
-                            string receipt_id = Request.QueryString["receiptid"];
-                            receipt.LoadData(Convert.ToInt32(receipt_id));
-                            decimal gst = decimal.Parse(ReportDT.GetDataByColumn(sysDT, "system_code", "GST", "system_value"));
-                            decimal discountv = decimal.Parse(discountValue);
-                            decimal gross = discountv;
-
-                            // Update 7/6/2016
-                            //decimal tax = gross / 115 * 15;
-                            decimal tax = 0m;
-                            if (body.BodycorpNoGST == false)
-                            {
-                                tax = gross * gst_rate / (1.0m + gst_rate);
-                                tax = AdFunction.Rounded(tax.ToString());
-                            }
-
-                            decimal net = discountv - tax;
-                            DataTable reglDT = ReportDT.getTable(constr, "gl_transactions");
-                            reglDT = ReportDT.FilterDT(reglDT, "gl_transaction_type_id=6 and gl_transaction_chart_id=" + disid);
-
-                            InsertDiscount(reference, receipt.ReceiptBodycorpId, net, tax, gross, taxtid, did, disid, invID, receipt_id);
-                        }
+                        discountValue = "0";
                     }
+                    decimal dv = decimal.Parse(discountValue);
+                    if (dv != 0)
+                    {
+                        DataTable sysDT = ReportDT.getTable(constr, "system");
+                        string taxcode = ReportDT.GetDataByColumn(sysDT, "system_code", "GST Output", "system_value");
+                        string discountcode = ReportDT.GetDataByColumn(sysDT, "system_code", "DISCOUNTCHARCODE", "system_value");
+                        DataTable chartDT = ReportDT.getTable(constr, "chart_master");
+                        string did = AdFunction.GENERALDEBTOR_ChartID;
+                        string taxtid = ReportDT.GetDataByColumn(chartDT, "chart_master_code", taxcode, "chart_master_id");
+                        string disid = ReportDT.GetDataByColumn(chartDT, "chart_master_code", discountcode, "chart_master_id");
+                        string reference = Journal.GetNextNumber();
+                        Receipt receipt = new Receipt(constr);
+
+                        //dyyr modified @20160723
+                        string receipt_id = ReportDT.GetDataByColumn(dt, "receipt_ref", receipt_ref, "receipt_gl_receipt_id");
+
+                        receipt.LoadData(Convert.ToInt32(receipt_id));
+                        decimal gst = decimal.Parse(ReportDT.GetDataByColumn(sysDT, "system_code", "GST", "system_value"));
+                        decimal discountv = decimal.Parse(discountValue);
+                        decimal gross = discountv;
+
+                        // Update 7/6/2016
+                        //decimal tax = gross / 115 * 15;
+                        decimal tax = 0m;
+                        if (body.BodycorpNoGST == false)
+                        {
+                            tax = gross * gst_rate / (1.0m + gst_rate);
+                            tax = AdFunction.Rounded(tax.ToString());
+                        }
+
+                        decimal net = discountv - tax;
+
+                        //dyyr modified @2016 07 23
+                    //       DataTable reglDT = ReportDT.getTable(constr, "gl_transactions");
+                    //       reglDT = ReportDT.FilterDT(reglDT, "gl_transaction_type_id=6 and gl_transaction_chart_id=" + disid);
+                        string invID = ReportDT.GetDataByColumn(dt, "receipt_ref", receipt_ref, "invoice_master_id");
+
+                        InsertDiscount(reference, receipt.ReceiptBodycorpId, net, tax, gross, taxtid, did, disid, invID, receipt_id);
+                    }
+                    
                 }
 
             }
@@ -528,7 +571,11 @@ namespace sapp_sms
             {
                 Odbc o = new Odbc(constr);
                 DataTable recepitDT = ReportDT.getTable(constr, "receipts");
-                string unitid = ReportDT.GetDataByColumn(recepitDT, "receipt_id", Request.QueryString["receiptid"].ToString(), "receipt_unit_id");
+
+              //dyyr modified @20160723
+              //string unitid = ReportDT.GetDataByColumn(recepitDT, "receipt_id", Request.QueryString["receiptid"].ToString(), "receipt_unit_id");
+                string unitid = ReportDT.GetDataByColumn(recepitDT, "receipt_id", reid, "receipt_unit_id");
+                
                 DataTable chartDT = ReportDT.getTable(constr, "chart_master");
                 string login = System.Web.HttpContext.Current.User.Identity.Name;
                 Sapp.General.User user = new Sapp.General.User(Sapp.SMS.AdFunction.constr_general);
@@ -556,35 +603,26 @@ namespace sapp_sms
                 //UpdatePaid(gross, InvID);
             }
         }
-        public void DeleteDiscount(string Invcode)
+        public void DeleteDiscount(string receipt_ref)
         {
             Odbc o = new Odbc(constr);
             DataTable dt = (DataTable)Session["DiscountDT"];
-            string gid = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "gl_transaction_id");
+            string gid = ReportDT.GetDataByColumn(dt, "receipt_ref", receipt_ref, "gl_transaction_id");
             if (!gid.Equals(""))
             {
                 int glid = int.Parse(gid);
                 string glgrossid = glid.ToString();
-                string referencr = ReportDT.GetDataByColumn(ReportDT.getTable(AdFunction.conn, "gl_transactions"), "gl_transaction_id", gid, "gl_transaction_ref");
-                string rsql = "delete FROM  receipt_gls where receipt_gl_gl_id =" + glgrossid;
-                string isql = "delete FROM  invoice_gls where invoice_gl_gl_id =" + glgrossid;
-                string tsql = "delete FROM  gl_transactions where gl_transaction_ref='" + referencr + "'";
-                o.ExecuteScalar(rsql);
-                o.ExecuteScalar(isql);
-                o.ExecuteScalar(tsql);
-            }
-        }
-        public void DeleteDiscountByReceipt(string receiptId)
-        {
-            Odbc o = new Odbc(constr);
-            DataTable dt = (DataTable)Session["DiscountDT"];
-  //          string gid = ReportDT.GetDataByColumn(dt, "invoice_master_num", Invcode, "gl_transaction_id");
-            string gid = "";
-            if (!gid.Equals(""))
-            {
-                int glid = int.Parse(gid);
-                string glgrossid = glid.ToString();
-                string referencr = ReportDT.GetDataByColumn(ReportDT.getTable(AdFunction.conn, "gl_transactions"), "gl_transaction_id", gid, "gl_transaction_ref");
+
+                //modified by dyyr @2016 07 23
+                //string referencr = ReportDT.GetDataByColumn(ReportDT.getTable(AdFunction.conn, "gl_transactions"), "gl_transaction_id", gid, "gl_transaction_ref");
+                string sql = "select gl_transaction_ref from gl_transactions where gl_transaction_id=" + gid;
+                DataTable DT1 = o.ReturnTable(sql, "D1");
+                string referencr = "";
+                if (DT1.Rows.Count > 0)
+                {
+                    referencr = DT1.Rows[0].ToString();
+                }
+
                 string rsql = "delete FROM  receipt_gls where receipt_gl_gl_id =" + glgrossid;
                 string isql = "delete FROM  invoice_gls where invoice_gl_gl_id =" + glgrossid;
                 string tsql = "delete FROM  gl_transactions where gl_transaction_ref='" + referencr + "'";
@@ -697,7 +735,7 @@ namespace sapp_sms
                         decimal odiscount = 0;
                         
                         //dyyr
-                        decimal.TryParse(GetDiscount(hdata["ID"].ToString(), HttpContext.Current.Session["Invoice_ID"].ToString()), out odiscount);
+                        decimal.TryParse(GetDiscount(hdata["InvoiceNum"].ToString()), out odiscount);
 
                         
                         // Update 15/03/2016 Update allocation check
@@ -717,10 +755,10 @@ namespace sapp_sms
                         if (glts_related.GLTempList[i].GlTransactionId == hdata["ID"].ToString())
                         {
                             glts_related.GLTempList[i].GlTransactionPaid = hdata["Paid"].ToString();
-                            glts_related.GLTempList[i].GlTransactionDue = (due - paid + ori_paid + odiscount).ToString("0.00");
+                            glts_related.GLTempList[i].GlTransactionDue = (due - paid + ori_paid + odiscount - discount).ToString("0.00");
                             glts_related.GLTempList[i].GlTransactionId = glts_related.GLTempList[i].GlTransactionId;
                         }
-                        SettingDiscount(hdata["Discount"].ToString(), hdata["InvoiceNum"].ToString(), line_id);
+                        SettingDiscount(hdata["Discount"].ToString(), hdata["InvoiceNum"].ToString());
                     }
 
                 #endregion
@@ -787,7 +825,7 @@ namespace sapp_sms
                             string discount_str = "0.0";
                             if ("Receipt".Equals(glitems.GLTransactionTypeId))
                             {
-                                discount_str = GetDiscount(glitems.GlTransactionId, Request.QueryString["id"]);
+                                discount_str = GetDiscount(glitems.GLTransactionRef);
                             }
 
                             decimal due = 0;
@@ -1008,9 +1046,10 @@ namespace sapp_sms
 
                 glts_related.GLTempList.CopyTo(pageList);
 
-                //dyyr
+                //dyyr modified @2016 07 24
                 Bodycorp body = new Bodycorp(AdFunction.conn);
                 body.LoadData(Convert.ToInt32(Request.Cookies["bodycorpid"].Value));
+                
 
                 // Add 20/05/2016
            //     string offerDiscount = HiddenOfferDiscount.Value; 
@@ -1125,7 +1164,7 @@ namespace sapp_sms
                             invoice.LoadData(Convert.ToInt32(id));
                             if (body.BodycorpDiscount)
                             {
-                                InsertDiscount(id);
+                                InsertDiscount(gRef);
                             }
                             Allocation.Allocate(im, invoice, Convert.ToDecimal(paid));
                         }
@@ -1135,7 +1174,7 @@ namespace sapp_sms
                             r.LoadData(Convert.ToInt32(id));
                             if (body.BodycorpDiscount)
                             {
-                                InsertDiscount(id);
+                                InsertDiscount(gRef);
                             }
                             Allocation.Allocate(im, r, Convert.ToDecimal(paid));
                         }
@@ -1177,7 +1216,7 @@ namespace sapp_sms
                             invoice.LoadData(Convert.ToInt32(id));
                             if (body.BodycorpDiscount)
                             {
-                                UpDateDiscount(invoice.InvoiceMasterNum);
+                                UpDateDiscount(gRef);
                             }
                             Allocation.Allocate(im, invoice, Convert.ToDecimal(paid));
                         }
@@ -1188,17 +1227,23 @@ namespace sapp_sms
                             if (body.BodycorpDiscount)
                             {
                                 //dyyr
-                                UpDateDiscount(im.InvoiceMasterNum);
+                                UpDateDiscount(gRef);
                             }
                             Allocation.Allocate(im, r, Convert.ToDecimal(paid));
                         }
                         if (type.Equals("Journal"))
                         {
-                            string sql = "update gl_transactions set gl_transaction_net=" + paid + " where gl_transaction_id=" + AdFunction.JournalPaid_INV_GLID(iid, gRef);
-                            Odbc o = new Odbc(AdFunction.conn);
-                            o.ExecuteScalar(sql);
-                            im.UpdateAllocation();
-
+                            //modified by dyyr @2016 07 23
+                            //string sql = "update gl_transactions set gl_transaction_net=" + paid + " where gl_transaction_id=" + AdFunction.JournalPaid_INV_GLID(iid, gRef);
+                            string journalId = AdFunction.JournalPaid_INV_GLID(iid, gRef);
+                            if (journalId != "")
+                            {
+                                string sql = "update gl_transactions set gl_transaction_net=" + paid + " where gl_transaction_id=" + journalId;
+                                Odbc o = new Odbc(AdFunction.conn);
+                                o.ExecuteScalar(sql);
+                                im.UpdateAllocation();
+                            }
+                            //modify end
                         }
                     }
                 }

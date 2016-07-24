@@ -97,9 +97,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Desktop\sapp_sms\sapp_sms\bin\Microsoft.ReportViewer.WebForms.dll</HintPath>
     </Reference>
-    <Reference Include="Sapp">
-      <HintPath>..\..\Sapp\Sapp\bin\Debug\Sapp.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Core" />
@@ -1974,6 +1971,10 @@
     <ProjectReference Include="..\..\jqGridAdv\jqGridAdv\jqGridAdv.csproj">
       <Project>{C4027B93-1BCC-49E9-BB19-3609D4BD822F}</Project>
       <Name>jqGridAdv</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Sapp\Sapp\Sapp.csproj">
+      <Project>{4F3183FB-BCEE-4034-A7E7-8AAFC41580FA}</Project>
+      <Name>Sapp</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

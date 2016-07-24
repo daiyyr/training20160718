@@ -146,3 +146,18 @@ function ImageButtonClose_ClientClick() {
 
     return true;
 }
+
+function DiscountOrNot(value, colname) {
+        var grid = $('#jqGridRelated');
+        if ($("#HiddenOfferDiscount").val() == "true") {
+            return [true, ""];
+        }
+        else {
+            if (value != 0 && (value != "" || value != null)) {
+                return [false, ", Discount was not allowed in this Bodycorp"];
+            }
+            else {
+                return [true, ""];
+            }
+        }
+}
