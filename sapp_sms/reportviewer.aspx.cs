@@ -603,7 +603,7 @@ namespace sapp_sms
                 string bodycorp_id = args[0];
                 string start_date = args[1];
                 string end_date = args[2];
-                ReportBalanceSheet Report = new ReportBalanceSheet(constr, Server.MapPath("templates/fakebalancesheet.rdlc"), ReportViewer1);
+                Sapp.SMS.FakeReportBalanceSheet Report = new FakeReportBalanceSheet(constr, Server.MapPath("templates/fakebalancesheet.rdlc"), ReportViewer1);
                 Report.SetReportInfo(Convert.ToInt32(bodycorp_id), Convert.ToDateTime(start_date), Convert.ToDateTime(end_date));
                 Report.Print();
             }

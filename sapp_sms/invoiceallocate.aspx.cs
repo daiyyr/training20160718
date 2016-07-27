@@ -23,6 +23,7 @@ namespace sapp_sms
         private const string TEMP_TYPE_RELATED = "invPaid";
         private const string TEMP_TYPE_UNPAID = "invUnPaid";
         private const string TYPE_ID = "3";
+        private static bool DataModified = false;
         protected void Page_Load(object sender, EventArgs e)
         {
             try
@@ -33,6 +34,7 @@ namespace sapp_sms
                 #endregion
 
                 //modified by dyyr @2016 07 24
+                DataModified = false;
                 Bodycorp body = new Bodycorp(AdFunction.conn);
                 body.LoadData(Convert.ToInt32(Request.Cookies["bodycorpid"].Value));
                 if (body.BodycorpDiscount)
@@ -232,10 +234,17 @@ namespace sapp_sms
                     {
                         dr["Discount"] = "0";
                     }
-                    decimal due = 0, discount = 0;
-                    decimal.TryParse(items["gl_transaction_due"].ToString(), out due);
-                    decimal.TryParse(dr["Discount"].ToString(), out discount);
-                    dr["Due"] = (due - discount).ToString();
+                    if (DataModified)
+                    {
+                        dr["Due"] = items["gl_transaction_due"].ToString();
+                    }
+                    else
+                    {
+                        decimal due = 0, discount = 0;
+                        decimal.TryParse(items["gl_transaction_due"].ToString(), out due);
+                        decimal.TryParse(dr["Discount"].ToString(), out discount);
+                        dr["Due"] = (due - discount).ToString();
+                    }
                     //modified end
 
                     
@@ -747,7 +756,7 @@ namespace sapp_sms
 
                         total_paid = total_paid - ori_paid + paid;
 
-                        if (due - paid + ori_paid + odiscount < 0)
+                        if (due - paid + ori_paid + odiscount - discount < 0)
                         {
                             throw new Exception("error: paid and discount is more than due!");
                         }
@@ -759,6 +768,7 @@ namespace sapp_sms
                             glts_related.GLTempList[i].GlTransactionId = glts_related.GLTempList[i].GlTransactionId;
                         }
                         SettingDiscount(hdata["Discount"].ToString(), hdata["InvoiceNum"].ToString());
+                        DataModified = true;
                     }
 
                 #endregion
