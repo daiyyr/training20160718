@@ -111,7 +111,7 @@ namespace Sapp.SMS
                         {
                             if (creditDR["chart_master_name"].ToString() == mainR["chart_master_name"].ToString())
                             {
-                                mainR["Credit"] = -float.Parse(creditDR["Credit"].ToString());
+                                mainR["Credit"] = -decimal.Parse(creditDR["Credit"].ToString());
                                 haveDebitRecord = true;
                                 break;
                             }
@@ -122,7 +122,7 @@ namespace Sapp.SMS
                         DataRow newCreditRow = FakebalanceDT.NewRow();
                         newCreditRow["type"] = dr["chart_type_name"];
                         newCreditRow["chart_master_name"] = creditDR["chart_master_name"];
-                        newCreditRow["Credit"] = -float.Parse(creditDR["Credit"].ToString());
+                        newCreditRow["Credit"] = -decimal.Parse(creditDR["Credit"].ToString());
                         FakebalanceDT.Rows.Add(newCreditRow);
                     }
                 }
@@ -139,15 +139,15 @@ namespace Sapp.SMS
                         }
                         if (mainDR2["Debit"] == null || mainDR2["Debit"].ToString() == "")
                         {
-                            mainDR2["Net"] = -float.Parse(mainDR2["Credit"].ToString());
+                            mainDR2["Net"] = -decimal.Parse(mainDR2["Credit"].ToString());
                         }
                         else if (mainDR2["Credit"] == null || mainDR2["Credit"].ToString() == "")
                         {
-                            mainDR2["Net"] = float.Parse(mainDR2["Debit"].ToString());
+                            mainDR2["Net"] = decimal.Parse(mainDR2["Debit"].ToString());
                         }
                         else
                         {
-                            mainDR2["Net"] = float.Parse(mainDR2["Debit"].ToString()) - float.Parse(mainDR2["Credit"].ToString());
+                            mainDR2["Net"] = decimal.Parse(mainDR2["Debit"].ToString()) - decimal.Parse(mainDR2["Credit"].ToString());
                         }
                     }
                 }
@@ -163,7 +163,7 @@ namespace Sapp.SMS
             }
 
             SumDT.Rows.Add(SumDT.NewRow());
-            SumDT.Rows[0]["Debit"] =SumIfNot(FakebalanceDT, "Debit", "type", "Sub Total: ");
+            SumDT.Rows[0]["Debit"] = SumIfNot(FakebalanceDT, "Debit", "type", "Sub Total: ");
             SumDT.Rows[0]["Credit"] =SumIfNot(FakebalanceDT, "Credit", "type", "Sub Total: ");
             SumDT.Rows[0]["Net"] = SumIfNot(FakebalanceDT, "Net", "type", "Sub Total: ");
 
@@ -171,12 +171,12 @@ namespace Sapp.SMS
 
         public static string SumIfNot(DataTable dt, string VColumn, string CColumn, string CValue)
         {
-            double sum = 0;
+            decimal sum = 0;
             for (int i = 0; i < dt.Rows.Count; i++)
             {
                 if (!dt.Rows[i][VColumn].ToString().Equals(""))
                     if (!(dt.Rows[i][CColumn].ToString().Equals(CValue)))
-                        sum += double.Parse(dt.Rows[i][VColumn].ToString());
+                        sum += decimal.Parse(dt.Rows[i][VColumn].ToString());
             }
             return sum.ToString();
         }
